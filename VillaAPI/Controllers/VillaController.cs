@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using VillaAPI.Data;
 using VillaAPI.Dtos;
@@ -81,6 +82,43 @@ public class VillaController : ControllerBase
             return NotFound();
         }
         VillaStore.villaList.Remove(villa);
+        return NoContent();
+    }
+
+    [HttpPut("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public IActionResult UpdateVilla(int id, [FromBody] VillaDto villaDto)
+    {
+        if (villaDto is null || id != villaDto.Id)
+        {
+            return BadRequest();
+        }
+
+        var villa = VillaStore.villaList.FirstOrDefault(x => x.Id == id);
+        villa.Name = villaDto.Name;
+        villa.Sqft = villaDto.Sqft;
+        villa.Occupancy = villaDto.Occupancy;
+        
+        return NoContent();
+
+    }
+
+    [HttpPatch]
+    public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaDto> patch)
+    {
+        if (patch is null  || id==0)
+        {
+            return BadRequest();
+        }
+
+        var villa = VillaStore.villaList.FirstOrDefault(x => x.Id == id);
+        patch.ApplyTo(villa, ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         return NoContent();
     }
 }
