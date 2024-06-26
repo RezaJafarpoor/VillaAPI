@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using VillaAPI.Data;
 using VillaAPI.Dtos;
 using VillaAPI.Entities;
@@ -45,6 +46,12 @@ public class VillaController : ControllerBase
         if (villa is null)
         {
             return BadRequest("villa");
+        }
+
+        if (VillaStore.villaList.FirstOrDefault(x => x.Name.ToLower() == villa.Name.ToLower()) != null)
+        {
+            ModelState.AddModelError("VillaExist", "Villa already Exists!");
+            return BadRequest(ModelState);
         }
 
         if (villa.Id > 0)
