@@ -15,6 +15,9 @@ public class VillaController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDto))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<VillaDto> GetVilla(int id)
     {
         if (id ==0)
