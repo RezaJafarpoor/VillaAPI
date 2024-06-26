@@ -63,4 +63,24 @@ public class VillaController : ControllerBase
         VillaStore.villaList.Add(villa);
         return CreatedAtAction(nameof(GetVilla), new {id = villa.Id}, villa);
     }
+
+    [HttpDelete($"{{id:int}}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public IActionResult DeleteVilla(int id)
+    {
+        if (id ==0)
+        {
+            return BadRequest();
+        }
+
+        var villa = VillaStore.villaList.FirstOrDefault(x => x.Id == id);
+        if (villa is null)
+        {
+            return NotFound();
+        }
+        VillaStore.villaList.Remove(villa);
+        return NoContent();
+    }
 }
