@@ -8,11 +8,14 @@ using VillaAPI.Entities;
 namespace VillaAPI.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-public class VillaController : ControllerBase
-{ 
+public class VillaController(ILogger<VillaController> logger) : ControllerBase
+{
+    private readonly ILogger<VillaController> _logger = logger;
+
     [HttpGet]
     public ActionResult<IEnumerable<VillaDto>> GetVillas()
     {
+        _logger.LogInformation("Getting all villas");
         return Ok(VillaStore.villaList);
     }
 
@@ -22,6 +25,8 @@ public class VillaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<VillaDto> GetVilla(int id)
     {
+        _logger.LogInformation("Getting one villa");
+
         if (id ==0)
         {
             return BadRequest();
