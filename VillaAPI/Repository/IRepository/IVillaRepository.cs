@@ -3,11 +3,8 @@ using VillaAPI.Entities;
 
 namespace VillaAPI.Repository.IRepository;
 
-public interface IVillaRepository
+public interface IVillaRepository : IGenericRepository<Villa>
 {
-    Task Create(Villa entity);
-    Task Remove(Villa entity);
-    Task<List<Villa>> GetAll(Expression<Func<Villa,bool>>? filter = null);
-    Task<Villa> Get(Expression<Func<Villa,bool>>? filter = null, bool tracked = true);
-    Task Save();
+    Task<Villa> UpdateAsync(Villa entity);
+    
 }

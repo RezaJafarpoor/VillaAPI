@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using VillaAPI.Data;
 using VillaAPI.DTOs;
 using VillaAPI.Entities;
+using VillaAPI.Repository.IRepository;
 
 namespace VillaAPI.Controllers;
 [Route("api/[controller]")]
@@ -12,19 +13,19 @@ namespace VillaAPI.Controllers;
 public class VillaController : ControllerBase
 {
     private readonly ILogger<VillaController> _logger;
-    private readonly ApplicationDbContext _dbContext;
+    private readonly IVillaRepository _dbVilla;
     private readonly IMapper _mapper;
 
-    public VillaController( ILogger<VillaController> logger, ApplicationDbContext dbContext, IMapper mapper)
+    public VillaController( ILogger<VillaController> logger,IVillaRepository dbVilla, IMapper mapper)
     {
         _logger = logger;
-        _dbContext = dbContext;
+        _dbVilla = dbVilla;
         _mapper = mapper;
     }
     [HttpGet]
     public async Task<ActionResult<IEnumerable<VillaDto>>> GetVillas()
     {
-        IEnumerable<Villa> villaList =await _dbContext.Villas.ToListAsync();
+        IEnumerable<Villa> villaList = await _dbVilla.GetAllAsync(); 
         
         _logger.LogInformation("Getting all villas");
         return Ok(_mapper.Map<List<VillaDto>>(villaList));
@@ -36,7 +37,7 @@ public class VillaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<VillaDto>> GetVilla(int id)
     {
-        var villa = await _dbContext.Villas.FirstOrDefaultAsync(x => x.Id == id);
+        var villa = await _dbVilla.GetAsync(x => x.Id == id);
         _logger.LogInformation("Getting one villa");
 
         if (id ==0)
@@ -63,7 +64,7 @@ public class VillaController : ControllerBase
     public async Task<ActionResult<VillaDto>> CreateVilla([FromBody] VillaCreateDto villaCreateDto)
     {
 
-        if (_dbContext.Villas.FirstOrDefault(x => x.Name.ToLower() == villaCreateDto.Name.ToLower())!= null)
+        if (_dbVilla.GetAsync(x => x.Name.ToLower() == villaCreateDto.Name.ToLower() )!= null)
         {
             ModelState.AddModelError("CustomError", "Villa already Exists!");  
         }
@@ -73,10 +74,9 @@ public class VillaController : ControllerBase
         }
 
         var model = _mapper.Map <Villa>(villaCreateDto);
-       
-    
-       await _dbContext.Villas.AddAsync(model);
-        await _dbContext.SaveChangesAsync();
+
+
+        await _dbVilla.CreateAsync(model);
        
         return CreatedAtAction(nameof(GetVilla), new {id = model.Id}, model);
     }
@@ -92,14 +92,13 @@ public class VillaController : ControllerBase
             return BadRequest();
         }
 
-        var villa = await _dbContext.Villas.FirstOrDefaultAsync(x => x.Id == id);
+        var villa = await _dbVilla.GetAsync(x => x.Id == id);
         if (villa == null)
         {
             return NotFound();
         }
 
-        _dbContext.Villas.Remove(villa);
-        await _dbContext.SaveChangesAsync();
+         await _dbVilla.Remove(villa);
 
        
         return NoContent();
@@ -116,8 +115,7 @@ public class VillaController : ControllerBase
         }
 
         var villa = _mapper.Map<Villa>(villaUpdateDto);
-        _dbContext.Villas.Update(villa);
-        await _dbContext.SaveChangesAsync();
+       await _dbVilla.UpdateAsync(villa);
         
         return NoContent();
 
@@ -132,7 +130,7 @@ public class VillaController : ControllerBase
         }
         
 
-        var villa = await _dbContext.Villas.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        var villa = await _dbVilla.GetAsync(x => x.Id == id, tracked:true);
         if (villa == null)
         {
             return BadRequest();
@@ -146,8 +144,7 @@ public class VillaController : ControllerBase
             return BadRequest();
         }
        
-        _dbContext.Villas.Update(model);
-        await _dbContext.SaveChangesAsync();
+        await _dbVilla.UpdateAsync(model);
         
         return NoContent();
     }
