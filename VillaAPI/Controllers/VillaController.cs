@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using VillaAPI.Data;
-using VillaAPI.Dtos;
-using VillaAPI.Entities;
+using VillaAPI.DTOs;
 
 namespace VillaAPI.Controllers;
 [Route("api/[controller]")]

@@ -1,4 +1,4 @@
-﻿using VillaAPI.Dtos;
+﻿using VillaAPI.DTOs;
 
 namespace VillaAPI.Data;
 
