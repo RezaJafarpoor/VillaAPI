@@ -16,12 +16,12 @@ public class VillaController : ControllerBase
     public VillaController( ILogger<VillaController> logger, ApplicationDbContext dbContext)
     {
         _logger = logger;
-        _dbContext = dbContext;
+        _dbContext = dbContext; 
     }
     [HttpGet]
-    public ActionResult<IEnumerable<VillaDto>> GetVillas()
+    public async Task<ActionResult<IEnumerable<VillaDto>>> GetVillas()
     {
-        var villas = _dbContext.Villas.ToList();
+        var villas =await _dbContext.Villas.ToListAsync();
         _logger.LogInformation("Getting all villas");
         return Ok(villas);
     }
@@ -30,9 +30,9 @@ public class VillaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VillaDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public ActionResult<VillaDto> GetVilla(int id)
+    public async Task<ActionResult<VillaDto>> GetVilla(int id)
     {
-        var villa = _dbContext.Villas.FirstOrDefault(x => x.Id == id);
+        var villa = await _dbContext.Villas.FirstOrDefaultAsync(x => x.Id == id);
         _logger.LogInformation("Getting one villa");
 
         if (id ==0)
@@ -56,7 +56,7 @@ public class VillaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status201Created)]
 
-    public ActionResult<VillaDto> CreateVilla([FromBody] VillaDto villaDto)
+    public async Task<ActionResult<VillaDto>> CreateVilla([FromBody] VillaCreateDto villaDto)
     {
 
         if (_dbContext.Villas.FirstOrDefault(x => x.Name.ToLower() == villaDto.Name.ToLower())!= null)
@@ -67,14 +67,10 @@ public class VillaController : ControllerBase
         {
             return BadRequest("villa");
         }
-        if (villaDto.Id > 0)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        
 
-        var villa = new Villa
+        var villa = new Villa()
         {
-            Id = villaDto.Id,
             Name = villaDto.Name,
             Amenity = villaDto.Amenity,
             CreatedDate = DateTime.UtcNow,
@@ -87,8 +83,8 @@ public class VillaController : ControllerBase
 
         };
 
-        _dbContext.Villas.Add(villa);
-        _dbContext.SaveChanges();
+       await _dbContext.Villas.AddAsync(villa);
+        await _dbContext.SaveChangesAsync();
        
         return CreatedAtAction(nameof(GetVilla), new {id = villa.Id}, villa);
     }
@@ -97,21 +93,21 @@ public class VillaController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public IActionResult DeleteVilla(int id)
+    public async Task<IActionResult> DeleteVilla(int id)
     {
         if (id ==0)
         {
             return BadRequest();
         }
 
-        var villa = _dbContext.Villas.FirstOrDefault(x => x.Id == id);
+        var villa = await _dbContext.Villas.FirstOrDefaultAsync(x => x.Id == id);
         if (villa == null)
         {
             return NotFound();
         }
 
         _dbContext.Villas.Remove(villa);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
        
         return NoContent();
@@ -120,11 +116,11 @@ public class VillaController : ControllerBase
     [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public IActionResult UpdateVilla(int id, [FromBody] VillaDto villaDto)
+    public async Task<IActionResult> UpdateVilla(int id, [FromBody] VillaUpdateDto villaDto)
     {
         if (villaDto is null || id != villaDto.Id)
         {
-            return BadRequest();
+            return BadRequest(villaDto);
         }
         var villa = new Villa
         {
@@ -140,14 +136,14 @@ public class VillaController : ControllerBase
 
         };
         _dbContext.Villas.Update(villa);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
         
         return NoContent();
 
     }
 
     [HttpPatch]
-    public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaDto> patch)
+    public async Task<IActionResult> UpdatePartialVilla(int id, JsonPatchDocument<VillaUpdateDto> patch)
     {
         if (patch == null || id == 0)
         {
@@ -155,12 +151,12 @@ public class VillaController : ControllerBase
         }
         
 
-        var villa = _dbContext.Villas.AsNoTracking().FirstOrDefault(x => x.Id == id);
+        var villa = await _dbContext.Villas.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (villa == null)
         {
             return BadRequest();
         }
-        var villaDto = new VillaDto
+        var villaDto = new VillaUpdateDto()
         {
             Id = villa.Id,
             Name = villa.Name,
@@ -191,7 +187,7 @@ public class VillaController : ControllerBase
 
         };
         _dbContext.Villas.Update(updatedVilla);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
         
         return NoContent();
     }
