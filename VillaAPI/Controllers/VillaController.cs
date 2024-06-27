@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using VillaAPI.Data;
 using VillaAPI.DTOs;
 using VillaAPI.Entities;
@@ -154,7 +155,7 @@ public class VillaController : ControllerBase
         }
         
 
-        var villa = _dbContext.Villas.FirstOrDefault(x => x.Id == id);
+        var villa = _dbContext.Villas.AsNoTracking().FirstOrDefault(x => x.Id == id);
         if (villa == null)
         {
             return BadRequest();
