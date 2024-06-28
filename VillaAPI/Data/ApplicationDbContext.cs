@@ -1,14 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using VillaAPI.Entities;
 
 namespace VillaAPI.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions options) : base(options)
     {
     }
 
+
+    public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     public DbSet<Villa> Villas { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

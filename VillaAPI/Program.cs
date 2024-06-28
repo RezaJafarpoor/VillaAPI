@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using VillaAPI.AutoMapper;
 using VillaAPI.Data;
+using VillaAPI.Entities;
 using VillaAPI.Repository;
 using VillaAPI.Repository.IRepository;
 
@@ -23,6 +25,9 @@ builder.Services.AddControllers(option =>
 {
     option.ReturnHttpNotAcceptable = true;
 }).AddNewtonsoftJson().AddXmlDataContractSerializerFormatters();
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
